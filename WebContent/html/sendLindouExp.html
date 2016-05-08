@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>邻聚</title>
+<link href="css/default.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="themes/icon.css">
+<link rel="stylesheet" type="text/css" href="css/my.css">
+<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="js/syExtJquery.js"></script>
+<script type="text/javascript" src="js/my.js"></script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+		<div id="toolbar" style="display: none;padding:10px 10px 8px 10px;">
+			<form id="searchForm">
+				<label for="cityId">城市：</label>
+				<select id="cityId" name="cityId" onchange="changeCity();">
+					<option value="0">请选择城市</option>
+					<option value="1">成都</option>
+				</select>
+			    <label for="courtyardId">社区：</label>
+				<select id="courtyardId" name="courtyardId">
+					<option value="0">请选择社区</option>
+				</select>
+				<label for="nickname">用户昵称：</label>
+				<input name="nickname" id="nickname" type="text" style="width: 180px;" />
+				&nbsp;<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="search_();">查询</a>
+			</form>
+		</div>
+		<div data-options="region:'center',fit:true,border:false">
+			<table id="grid" data-options="fit:true,border:false"></table>
+		</div>
+		<div id="addWin" class="easyui-window" style="width:300px;height:250px" data-options="title:'修改',iconCls:'icon-edit',modal:true,minimizable:false,maximizable:false,collapsible:false,closable:true,closed:true">
+			<form id="add_form" method="post" style="padding:10px 10px 10px 10px;">
+				<div class="control-group">
+					<label class="control-label" for="courtyardName">社区：</label>
+					<input type="text"  class="easyui-validatebox" name="courtyardName"  readonly="true" />
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="nickname">用户：</label>
+					<input type="text"  class="easyui-validatebox" name="nickname"  readonly="true" />
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="amount">数量：</label>
+					<input type="text"  class="easyui-validatebox" name="amount"  required="required" />
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="userId"> </label>
+					<input type="hidden" name="userId" value="0" />
+					<input type="hidden" name="addType" value="0" />
+					<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="commit()">提交</a>
+				</div>
+			</form>
+		</div>
+	</body>
+	<script type="text/javascript">
+		var grid;
+		$(function() {
+			$('#addWin').window('close');
+			grid = $('#grid').datagrid({
+				title : '',
+				url : '',
+				striped : true,
+				rownumbers : true,
+				pagination : true,
+				singleSelect : true,
+				idField : 'id',
+				pageSize : 20,
+				pageList : [20,40,60],
+				columns : [[{
+					width : '0',
+					title : '',
+					field : 'id',
+					hidden : true
+				}, {
+					width : '100',
+					title : '社区',
+					field : 'courtyardName'
+				}, {
+					width : '100',
+					title : '电话',
+					field : 'tel'
+				},{
+					width : '100',
+					title : '用户昵称',
+					field : 'nickname'
+				},{
+					width : '50',
+					title : '等级',
+					field : 'level'
+				},{
+					width : '50',
+					title : '经验',
+					field : 'exp'
+				}, {
+					width : '50',
+					title : '邻豆数',
+					field : 'lindou'
+				},{
+					width : '150',
+					title : '兴趣',
+					field : 'instrests'
+				}, {
+					width : '50',
+					title : '职业',
+					field : 'cereer'
+				}, {
+					width : '50',
+					title : '性别',
+					field : 'gender'
+				},{
+					width : '50',
+					title : '年龄',
+					field : 'age'
+				},{
+					width : '150',
+					title : '注册时间',
+					field : 'registerTime'
+				},{
+					width : '100',
+					title : '社区验证状态',
+					field : 'validateStatus'
+				},{
+					width : '100',
+					title : '操作',
+					field : 'action',
+					formatter : function(value, row, index) {
+						var str = '<a href="#" style="color:blue" onclick="showAddWin(' + index + ',1)">发邻豆</a>';
+						str+='&nbsp;&nbsp|&nbsp;&nbsp<a href="#" style="color:blue" onclick="showAddWin(' + index + ',2)">发经验</a>'
+						return str;
+					}
+				}
+				]],
+				toolbar : '#toolbar',
+				onBeforeLoad : function(param) {
+					
+				},
+				onLoadSuccess : function(data) {
+					$.messager.progress('close');
+				}
+			});
+		});
+		function changeCity(){
+			var cityId = $("#cityId").find("option:selected").val();
+			$.get('../manage/loadCourtyard.do',{'cityId' : cityId}, function(result) {
+				$('select[name="courtyardId"]').html('');
+				$('select[name="courtyardId"]').append("<option value='0'>请选择社区</option>");
+				$.each(result.rows, function(idx, item) {
+					$('select[name="courtyardId"]').append("<option value='" + item.id + "'>" + item.name + "</option>");
+				});
+			});
+		}
+		function search_()
+        {
+        	grid.datagrid('clearSelections');
+        	$('#grid').datagrid({
+        		url : '../manage/findTargetUsers.do',    
+        		queryParams :
+        		{
+        			courtyardId : $("#courtyardId").find("option:selected").val(),
+        			nickName : $("#nickname").val()
+        		},
+        		striped : true,
+				rownumbers : true,
+				pagination : true,
+				singleSelect : true,
+				onBeforeLoad : function(param) {
+					
+				},
+				onLoadSuccess : function(data) {
+					$.messager.progress('close');
+				}
+        	});
+        }
+		function showAddWin(index,addType) {
+			var rows = grid.datagrid('getRows');
+			var row = rows[index];
+			if(addType==1){
+				$('#addWin').window({
+					title : '发放邻豆'
+				});
+			}else{
+				$('#addWin').window({
+					title : '发放经验'
+				});
+			}
+			$('#add_form').find("input[name='courtyardName']").val(row.courtyardName);
+			$('#add_form').find("input[name='nickname']").val(row.nickname);
+			$('#add_form').find("input[name='userId']").val(row.id);
+			$('#add_form').find("input[name='addType']").val(addType);
+			$('#add_form').find("input[name='amount']").val('');
+			$('#addWin').window('open');
+		}
+		
+		function commit() {
+			var url = '../manage/addLindouExp.do';
+			$('#add_form').form('submit', {
+				url : url,
+				onSubmit : function() {
+					var isValid = $(this).form('validate');
+					return isValid;
+				},
+				onBeforeLoad : function() {
+					$.messager.progress({
+						text : '数据处理中，请稍后....'
+					});
+				},
+				success : function(data) {
+					$.messager.progress('close');
+					// change the JSON string to javascript object
+					var data = eval('(' + data + ')');
+					$('#addWin').window('close');
+					if (data.errorCode == 0) {
+						$.messager.alert('', '成功', 'info', function() {
+							grid.datagrid('clearSelections');
+							grid.datagrid('reload');
+						});
+					}else{
+						$.messager.alert('', data.msg, 'error');
+					}
+				},
+				onLoadError : function() {
+					$('#addWin').window('close');
+					$.messager.progress('close');
+					$.messager.alert('', '提交失败!', 'error');
+				}
+			});
+		}
+		
+	</script>
+</html>

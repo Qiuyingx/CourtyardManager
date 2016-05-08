@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<invitations>
+	<invitation id="1" name="运动健身"/>
+	<invitation id="2" name="亲子活动"/>
+	<invitation id="3" name="社区聚会"/>
+	<invitation id="4" name="拼车"/>
+	<invitation id="5" name="户外活动"/>
+</invitations>
+
+

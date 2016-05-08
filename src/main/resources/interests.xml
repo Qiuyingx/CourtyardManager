@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<interests>
+	<interest id="1" name="爬山"/>
+	<interest id="2" name="羽毛球"/>
+	<interest id="4" name="篮球"/>
+	<interest id="5" name="足球"/>
+	<interest id="6" name="摄影"/>
+	<interest id="7" name="网球"/>
+	<interest id="8" name="乒乓球"/>
+	<interest id="9" name="美食"/>
+	<interest id="10" name="亲子"/>
+	<interest id="11" name="跑步"/>
+	<interest id="12" name="看书"/>
+	<interest id="13" name="骑车"/>
+	<interest id="14" name="自驾游"/>
+	<interest id="15" name="徒步"/>
+	<interest id="16" name="烘焙"/>
+	<interest id="17" name="棋牌麻将"/>
+	<interest id="18" name="逛街"/>
+	<interest id="19" name="宠物"/>
+	<interest id="20" name="健身"/>
+	<interest id="21" name="美妆"/>
+	<interest id="22" name="手工"/>
+	<interest id="23" name="动漫"/>
+	<interest id="24" name="IT"/>
+	<interest id="25" name="多肉植物"/>
+	<interest id="26" name="绘画"/>
+	<interest id="27" name="钢琴"/>
+	<interest id="29" name="旅行"/>
+</interests>
+
+

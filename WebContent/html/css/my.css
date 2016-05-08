@@ -1,0 +1,17 @@
+.control-group {
+	padding: 5px;
+}
+
+.control-label {
+	float: left;
+	width: 80px;
+	padding-top: 5px;
+	text-align: right;
+}
+
+.input-large {
+  width: 210px;
+}
+.pro-content-text {
+  font-family:simhei;font-weight:bold;
+}

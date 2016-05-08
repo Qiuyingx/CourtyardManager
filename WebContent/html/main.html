@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>邻聚后台管理</title>
+<link rel="stylesheet" type="text/css" href="css/default.css" />
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css" />
+<link rel="stylesheet" type="text/css" href="themes/icon.css" />
+<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src='js/outlook2.js'></script>
+<script type="text/javascript" src="js/syExtJquery.js"></script>
+<script type="text/javascript" src="js/my.js"></script>
+<script type="text/javascript">
+
+	var menus = {'menus':[
+							{'menuid':'1','icon':'icon-sys','role':'0','menuname':'权限管理',
+								'menus':[
+								{'menuid':'11','menuname':'管理员查询','icon':'icon-nav','url':'findManagerUser.html'},
+								{'menuid':'12','menuname':'添加管理员','icon':'icon-nav','url':'addManagerUser.html'}
+								         ]
+							},
+							{'menuid':'2','icon':'icon-sys','role':'2','menuname':'用户管理',
+								'menus':[
+								{'menuid':'21','menuname':'用户信息','icon':'icon-nav','url':'findUsers.html'},
+								{'menuid':'22','menuname':'用户订单','icon':'icon-nav','url':'findOrders.html'},
+								{'menuid':'23','menuname':'发邻豆经验','icon':'icon-nav','url':'sendLindouExp.html'},
+								{'menuid':'24','menuname':'意见反馈','icon':'icon-nav','url':'feedback.html','role':'0'}
+								         ]
+							},
+							{'menuid':'3','icon':'icon-sys','role':'2','menuname':'帖子管理',
+								'menus':[
+										{'menuid':'31','menuname':'筛选','icon':'icon-nav','url':'fiterPost.html'},
+										{'menuid':'32','menuname':'举报','icon':'icon-nav','url':'report.html'}
+									]
+							},{'menuid':'4','icon':'icon-sys','role':'2','menuname':'活动邀约管理',
+								'menus':[{'menuid':'41','menuname':'邀约查询','icon':'icon-nav','url':'fiterInvitation.html'}]
+							},{'menuid':'5','icon':'icon-sys','role':'2','menuname':'活动管理',
+								'menus':[{'menuid':'51','menuname':'发布活动','icon':'icon-nav','url':'publishactivity.html'},
+								         {'menuid':'52','menuname':'活动查询','icon':'icon-nav','url':'showactivity.html'}
+									]
+							},{'menuid':'6','icon':'icon-sys','role':'2','menuname':'公告管理',
+								'menus':[
+									{'menuid':'61','menuname':'发布公告','icon':'icon-nav','url':'publishNotice.html'}
+								        ]
+							},{'menuid':'7','icon':'icon-sys','role':'0','menuname':'商店管理',
+								'menus':[
+									{'menuid':'71','menuname':'商品列表','icon':'icon-nav','url':'Shop.html'}
+								]
+							}
+					]};
+	
+	var _menus = menus;
+	var addTabs = $('#tabs');
+	$(document).ready(function() {
+		$('#w').window('close');
+		$("#userName").html(getURLParameter("userName"));
+		$('#loginOut').click(function() {
+			$.messager.confirm('系统提示', '您确定要退出本次登录吗?', function(r) {
+				if (r) {
+					var posting = $.post('../manage/logout.do', function(data) {
+						if (data.code == 0) {
+							location.href = 'index.html';
+						} else {
+							location.href = 'index.html';
+						}
+					}, 'json');
+				}
+			});
+		});
+
+		$('#editpass').click(function() {
+			openPwd();
+			$('#w').window('open');
+		});
+		$('#btnEp').click(function() {
+			var $oldPass = $('#txtOldPass');
+			var $newPass = $('#txtNewPass');
+			if ($oldPass.val() == '') {
+				msgShow('系统提示', '请输入旧密码！', 'warning');
+				return false;
+			}
+			if ($newPass.val() == '') {
+				msgShow('系统提示', '请输入新密码！', 'warning');
+				return false;
+			}
+			$.post('../manage/modifyPassword.do', {
+				oldLoginPass : $oldPass.val(),
+				newLoginPass : $newPass.val()
+			}, function(data) {
+				if (data.errorCode == 0) {
+					msgShow('系统提示', '恭喜，密码修改成功！<br>您的新密码为：' + $newPass.val(), 'info');
+					$newPass.val('');
+					$oldPass.val('');
+					$('#w').window('close');
+				} else {
+					$.messager.alert('', data.msg, 'error');
+				}
+			}, 'json');
+		});
+		function openPwd() {
+			$('#w').window({
+				title : '修改密码',
+				width : 300,
+				modal : true,
+				shadow : true,
+				closed : true,
+				height : 160,
+				resizable : false
+			});
+		}
+
+	});
+</script>
+
+</head>
+<body class="easyui-layout" style="overflow-y: hidden" scroll="no">
+	<noscript>
+		<div style="position: absolute; z-index: 100000; height: 2046px; top: 0px; left: 0px; width: 100%; background: white; text-align: center;">
+			<img src="images/noscript.gif" alt='抱歉，请开启脚本支持！' />
+		</div>
+	</noscript>
+	<div region="north" split="true" border="false"
+		style="overflow: hidden; height: 30px; background: url(images/layout-browser-hd-bg.gif) #7f99be repeat-x center 50%; line-height: 20px; color: #fff; font-family: Verdana, 微软雅黑, 黑体">
+		<span style="float: right; padding-right: 20px;" class="head">
+			<font id="userName"></font>
+			<a href="#" id="editpass">修改密码</a> 
+			<a href="#"	id="loginOut">安全退出</a> 
+		</span> 
+		<span style="padding-left: 10px; font-size: 16px;">
+			<img src="images/blocks.gif" width="20" height="20" align="absmiddle" />邻聚后台管理系统
+		</span>
+	</div>
+	<div region="south" split="true" style="height: 30px; background: #D2E0F2;">
+		<div class="footer"></div>
+	</div>
+	<div region="west" hide="true" split="true" title="导航菜单" style="width: 180px;" id="west">
+		<div id="nav" class="easyui-accordion" fit="true" border="false">
+			<!--  导航内容 -->
+		</div>
+	</div>
+	<div id="mainPanle" region="center" style="background: #eee; overflow-y: hidden">
+		<div id="tabs" class="easyui-tabs" fit="true" border="false">
+			<div title="邻聚后台管理系统" style="padding: 20px; overflow: hidden; color: red;">
+				<h1 style="font-size: 24px;">欢迎使用邻聚后台管理系统</h1>
+			</div>
+		</div>
+	</div>
+	<!--修改密码窗口-->
+	<div id="w" class="easyui-window" title="修改密码" data-options="collapsible:false,minimizable:false,maximizable:false,icon:'icon-save'" style="width: 300px; height: 150px; padding: 5px; background: #fafafa;">
+		<div class="easyui-layout" data-options="fit:true">
+			<div data-options="region:'center',border:false" style="padding: 10px; background: #fff; border: 1px solid #ccc;">
+				<table cellpadding="3">
+					<tr>
+						<td>旧密码：</td>
+						<td><input id="txtOldPass" type="password" class="txt01" /></td>
+					</tr>
+					<tr>
+						<td>新密码：</td>
+						<td><input id="txtNewPass" type="password" class="txt01" /></td>
+					</tr>
+				</table>
+			</div>
+			<div data-options="region:'south',border:false" style="text-align: center; height: 30px; line-height: 1px;">
+				<a id="btnEp" class="easyui-linkbutton" icon="icon-ok" href="javascript:void(0)">确定</a>
+			</div>
+		</div>
+	</div>
+	<div id="mm" class="easyui-menu" style="width: 150px;">
+		<div id="mm-tabupdate">刷新</div>
+		<div class="menu-sep"></div>
+		<div id="mm-tabclose">关闭</div>
+		<div id="mm-tabcloseall">全部关闭</div>
+		<div id="mm-tabcloseother">除此之外全部关闭</div>
+		<div class="menu-sep"></div>
+		<div id="mm-tabcloseright">当前页右侧全部关闭</div>
+		<div id="mm-tabcloseleft">当前页左侧全部关闭</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<levelUps>
+	<levelUp level="1" exp="0" lindou="0"/>
+	<levelUp level="2" exp="31" lindou="0"/>
+	<levelUp level="3" exp="61" lindou="0"/>
+	<levelUp level="4"  exp="131" lindou="0"/>
+	<levelUp level="5"  exp="551" lindou="0"/>
+	<levelUp level="6"  exp="1001" lindou="0"/>
+	<levelUp level="7"  exp="1501" lindou="0"/>
+	<levelUp level="8"  exp="2001" lindou="0"/>
+	<levelUp level="9"  exp="3001" lindou="0"/>
+	<levelUp level="10" exp="5001" lindou="0"/>
+	<levelUp level="11" exp="8001" lindou="0"/>
+	<levelUp level="12" exp="12001" lindou="0"/>
+	<levelUp level="13" exp="15001" lindou="0"/>
+	<levelUp level="14" exp="20001" lindou="0"/>
+	<levelUp level="15" exp="25001" lindou="0"/>
+	<levelUp level="16" exp="30001" lindou="0"/>
+	<levelUp level="17" exp="35001" lindou="0"/>
+	<levelUp level="18" exp="40001" lindou="0"/>
+	<levelUp level="19" exp="45001" lindou="0"/>
+	<levelUp level="20" exp="50001" lindou="0"/>
+</levelUps>
+
+

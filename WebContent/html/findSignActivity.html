@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>邻聚</title>
+<link href="css/default.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="themes/icon.css">
+<link rel="stylesheet" type="text/css" href="css/my.css">
+<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="js/syExtJquery.js"></script>
+<script type="text/javascript" src="js/my.js"></script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+		<div id="toolbar" style="display: none;padding:10px 10px 8px 10px;">
+			<a href="showactivity.html" class="easyui-linkbutton" data-options="iconCls:'icon-back'" >返回</a>
+		</div>
+		<div data-options="region:'center',fit:true,border:false">
+			<table id="grid" data-options="fit:true,border:false"></table>
+		</div>
+		
+	</body>
+	<script type="text/javascript">
+		$(function() {
+			var activityId = getURLParameter('activityId');
+			grid = $('#grid').datagrid({
+				title : '',
+				url : '../manage/findActivitySignUp.do?activityId='+activityId,
+				striped : true,
+				rownumbers : true,
+				pagination : false,
+				singleSelect : true,
+				idField : 'id',
+				columns : [[{
+					width : '0',
+					title : '',
+					field : 'id',
+					hidden : true
+				}, {
+					width : '100',
+					title : '社区',
+					field : 'courtyardName'
+				},{
+					width : '100',
+					title : '姓名',
+					field : 'userName'
+				},{
+					width : '100',
+					title : '电话',
+					field : 'tel'
+				},{
+					width : '300',
+					title : '备注',
+					field : 'content'
+				},{
+					width : '150',
+					title : '报名时间',
+					field : 'signTime'
+				}
+				]],
+				toolbar : '#toolbar',
+				onBeforeLoad : function(param) {
+					
+				},
+				onLoadSuccess : function(data) {
+					$.messager.progress('close');
+				}
+			});
+		});
+		
+	</script>
+</html>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<!-- 在此添加控制器的映射路径 -->
+	<context:component-scan base-package="cn.dayuanzi.controller" />
+
+	<bean id="userSessionInterceptor" class="cn.dayuanzi.web.filter.UserSessionInterceptor">
+		<property name="ignore" >
+			<list>
+            </list>
+		</property>
+	</bean>
+	<!-- 有新增加的拦截器加入到下面的列表中 -->
+	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+		<property name="interceptors">
+			<list>
+				<ref bean="userSessionInterceptor"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="0" />
+	</bean>
+	<bean id="jspResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/" />
+		<property name="suffix" value=".html" />
+		<property name="order" value="1" />
+	</bean>
+	
+	<bean id="jsonView" class="cn.dayuanzi.web.view.JsonView" />
+</beans>

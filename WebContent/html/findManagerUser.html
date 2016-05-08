@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>邻聚</title>
+<link href="css/default.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="themes/icon.css">
+<link rel="stylesheet" type="text/css" href="css/my.css">
+<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="js/syExtJquery.js"></script>
+<script type="text/javascript" src="js/my.js"></script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+		<div id="toolbar" style="display: none;padding:10px 10px 8px 10px;">
+			<form id="searchForm">
+				<label for="cityId">城市：</label>
+				<select id="cityId" name="cityId" onchange="changeCity();">
+					<option value="0">请选择城市</option>
+					<option value="1">成都</option>
+				</select>
+			    <label for="courtyardId">社区：</label>
+				<select id="courtyardId" name="courtyardId">
+					<option value="0">请选择社区</option>
+				</select>
+				<label for="userName">用户名：</label>
+				<input name="userName" id="userName" type="text" style="width: 180px;" />
+				&nbsp;<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="search_();">查询</a>
+			</form>
+		</div>
+		<div data-options="region:'center',fit:true,border:false">
+			<table id="grid" data-options="fit:true,border:false"></table>
+		</div>
+	</body>
+	<script type="text/javascript">
+		$(function() {
+			grid = $('#grid').datagrid({
+				title : '',
+				url : '',
+				striped : true,
+				rownumbers : true,
+				pagination : false,
+				singleSelect : true,
+				idField : 'id',
+				columns : [[{
+					width : '0',
+					title : '',
+					field : 'id',
+					hidden : true
+				}, {
+					width : '100',
+					title : '用户名',
+					field : 'userName'
+				}, {
+					width : '100',
+					title : '角色',
+					field : 'role'
+				}, {
+					width : '150',
+					title : '社区',
+					field : 'courtyard'
+				}
+				]],
+				toolbar : '#toolbar',
+				onBeforeLoad : function(param) {
+					
+				},
+				onLoadSuccess : function(data) {
+					$.messager.progress('close');
+				}
+			});
+		});
+		function changeCity(){
+			var cityId = $("#cityId").find("option:selected").val();
+			$.get('../manage/loadCourtyard.do',{'cityId' : cityId}, function(result) {
+				$('select[name="courtyardId"]').html('');
+				$('select[name="courtyardId"]').append("<option value='0'>请选择社区</option>");
+				$.each(result.rows, function(idx, item) {
+					$('select[name="courtyardId"]').append("<option value='" + item.id + "'>" + item.name + "</option>");
+				});
+			});
+		}
+		function search_()
+        {
+        	grid.datagrid('clearSelections');
+        	$('#grid').datagrid({
+        		url : '../manage/findManagerUsers.do',    
+        		queryParams :
+        		{
+        			courtyardId : $("#courtyardId").find("option:selected").val(),
+        			userName : $("#userName").val()
+        		},
+        		striped : true,
+				rownumbers : true,
+				pagination : true,
+				singleSelect : true,
+				onBeforeLoad : function(param) {
+					
+				},
+				onLoadSuccess : function(data) {
+					$.messager.progress('close');
+				}
+        	});
+        };
+	</script>
+</html>

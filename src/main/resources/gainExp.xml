@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+获取经验配置
+id:获取经验的场景标识，唯一
+remark:场景描述
+exp:每次可以获得的经验
+limitDaily:每日获取的限制次数 
+ -->
+<gainExp>
+	<scene id="1" remark="注册" exp="20"  dec="一次性"  image="" />
+	<scene id="2" remark="社区认证" exp="30" dec="一次性" image=""/>
+	<scene id="3" remark="资料完善" exp="10"  dec="一次性" image=""/>
+	<scene id="4" remark="每日签到" exp="1"  dec="每日1次" image=""/>
+	<scene id="5" remark="连续七日签到" exp="10"  dec="每七天一次 " image=" "/>
+	<scene id="6" remark="发话题" exp="1"  limitDaily="2"  dec="每日2次" image=""/>
+	<scene id="7" remark="发邀约" exp="5" limitDaily="1"  dec="每日1次" image=""/>
+	<scene id="8" remark="发帮帮" exp="1" limitDaily="1"  dec="每日1次 " image=""/>
+	<scene id="9" remark="意见被采纳" exp="10"   dec="不限制" image=""/>
+	<scene id="10" remark="评论" exp="2" limitDaily="10"  dec="每日10次" image=""/>
+	<scene id="11" remark="被感谢" exp="1" limitDaily="10"  dec="每日10次" image=""/>
+	<scene id="12" remark="邀请邻居" exp="20" dec="不限制" image=""/>
+	<scene id="13" remark="邀请非邻居" exp="5"  dec="不限制" image=""/>
+	<scene id="14" remark="官方活动报名并签到" exp="20"  dec="一次性" image=""/>
+</gainExp>
+
+

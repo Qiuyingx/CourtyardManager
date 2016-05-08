@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>邻聚后台管理</title>
+		<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+		<link rel="stylesheet" type="text/css" href="themes/icon.css">
+		<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+		<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+	</head>
+	<body>
+		<div style="margin:0 auto;width:800px;">
+			<div id="login_window" class="easyui-window" data-options="minimizable:false,maximizable:false,collapsible:false,closable:false" title="登陆" style="width:300px;height:175px;">
+				<form id="login_form" method="post" style="padding:10px 20px 10px 40px;">
+					<p>
+						用户名:
+						<input class="easyui-validatebox" placeholder="请输入登录名" type="text" name="userName" id="userName"/>
+					</p>
+					<p>
+						密&nbsp;&nbsp;码:
+						<input class="easyui-validatebox" placeholder="请输入密码" type="password" name="password" />
+					</p>
+					<div style="padding:5px;text-align:center;">
+						<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="login()">登录</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript">
+		function login() {
+			//window.location.href = 'main.html';
+			$('#login_form').form('submit', {
+				url : '../manage/login.do',
+				onSubmit : function() {
+					var isValid = $(this).form('validate');
+					return isValid;
+				},
+				onBeforeLoad : function() {
+					$.messager.progress({
+						text : '数据处理中，请稍后....'
+					});
+				},
+				success : function(data) {
+					$.messager.progress('close');
+					// change the JSON string to javascript object
+					var data = eval('(' + data + ')');
+					if (data.errorCode == 0) {
+						window.location.href = 'main.html?userName='+$("#userName").val()+"&role="+data.role;
+					} else {
+						$.messager.alert('错误', data.msg, 'error');
+					}
+				},
+				onLoadError : function() {
+					$.messager.progress('close');
+					$.messager.alert('错误', '登录失败!', 'error');
+				}
+			});
+		}
+		$(document).ready(function(){ 
+			$("#login_form").keydown(function(e){ 
+			var curKey = e.which; 
+			// press the enter
+			if(curKey == 13){ 
+				  login();
+				} 
+			}); 
+			}); 
+	</script>
+</html>

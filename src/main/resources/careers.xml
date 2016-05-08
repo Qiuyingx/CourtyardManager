@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<careers>
+	<career id="1" industry="IT" domain="计算机/互联网/通信"/>
+	<career id="2" industry="制造" domain="生产/工艺/制造"/>
+	<career id="3" industry="医疗" domain="医疗/护理/制药"/>
+	<career id="4" industry="金融" domain="金融/银行/投资/保险"/>
+	<career id="5" industry="商业" domain="销售/公关/媒体/服务业/个体户"/>
+	<career id="6" industry="文化" domain="文化/广告/传媒/文化"/>
+	<career id="7" industry="艺术" domain="娱乐/艺术/表演"/>
+	<career id="8" industry="法律" domain="律师/法务"/>
+	<career id="9" industry="教育" domain="教育/培训"/>
+	<career id="10" industry="市政" domain="公务员/行政/事业单位"/>
+	<career id="11" industry="房地产" domain="房地产/设计/工程/建筑"/>
+	<career id="12" industry="公益类" domain="NGO/环保/公益"/>
+	<career id="13" industry="自由职业" domain="全职妈妈/个人工作室/手工艺人"/>
+</careers>

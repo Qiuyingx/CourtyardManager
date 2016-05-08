@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+获取邻豆配置
+id:获取邻豆的场景标识，唯一
+remark:场景描述
+lindou:每次可以获得的邻豆
+ -->
+<gainLindou>
+	<scene id="1" remark="用户注册" lindou="20" dec="一次性" image=""/>
+	<scene id="2" remark="社区认证" lindou="30" dec="一次性" image=""/>
+	<scene id="3" remark="资料完善" lindou="10" dec="一次性" image=""/>
+	<scene id="4" remark="连续七天签到" lindou="7" dec="一次性" image=""/>
+	<scene id="5" remark="采纳意见" lindou="3" dec="不限制"   image=""/>
+	<scene id="6" remark="邀请邻居" lindou="20" dec="不限制"  image=""/>
+	<scene id="7" remark="邀请非邻居" lindou="5" dec="不限制"  image=""/>
+	<scene id="8" remark="官方活动报名并签到" lindou="20" dec="一次性" image=""/>
+</gainLindou>
+
+

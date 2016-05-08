@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>邻聚</title>
+		<link href="css/default.css" rel="stylesheet" type="text/css" />
+		<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+		<link rel="stylesheet" type="text/css" href="themes/icon.css">
+		<link rel="stylesheet" type="text/css" href="css/my.css">
+		<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+		<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+		<script type="text/javascript" src="js/easyui-lang-zh_CN.js"></script>
+		<script type="text/javascript" src="js/syExtJquery.js"></script>
+		<script type="text/javascript" src="js/my.js"></script>
+	</head>
+	<body class="easyui-layout">
+		<form id="area_form" method="post" style="padding:10px 10px 10px 10px;">
+			
+			<div class="control-group">
+                <label  class="control-label"  for="content">内容:</label>  
+                <textarea class="easyui-validatebox" placeholder="请输入内容" name="content" rows="7" cols="80" data-options="required:true,validType:'length[0,1000]'"></textarea>  
+            </div>
+			<div class="control-group">
+				<label  class="control-label"  for=""></label> 
+				<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="commit()">提交</a>
+			</div>
+		</form>
+	</body>
+	<script type="text/javascript">
+
+		function commit() {
+			var url = '../manage/sendNotice.do';
+			$('#area_form').form('submit', {
+				url : url,
+				onSubmit : function() {
+					var isValid = $(this).form('validate');
+					if(isValid)
+					{
+					  //showProcess(true,"温馨提示","数据处理中，请稍后....");
+					}
+					return isValid;
+				},
+				onBeforeLoad : function() {
+					$.messager.progress({
+						text : '数据处理中，请稍后....'
+					});
+				},
+				success : function(data) {
+					$.messager.progress('close');
+					// change the JSON string to javascript object
+					var data = eval('(' + data + ')');
+					if (data.errorCode == 0) {
+						$.messager.alert('', '发布成功', 'info');
+					} else {
+						$.messager.alert('', data.msg, 'error');
+					}
+				},
+				onLoadError : function() {
+					$.messager.progress('close');
+					$.messager.alert('', '提交失败!', 'error');
+				}
+			});
+		}
+		function changeCity(){
+			var cityId = $("#cityId").find("option:selected").val();
+			$.get('../manage/loadCourtyard.do',{'cityId' : cityId}, function(result) {
+				$('select[name="courtyardId"]').html('');
+				$('select[name="courtyardId"]').append("<option value='0'>请选择社区</option>");
+				$.each(result.rows, function(idx, item) {
+					$('select[name="courtyardId"]').append("<option value='" + item.id + "'>" + item.name + "</option>");
+				});
+			});
+		}
+	</script>
+</html>

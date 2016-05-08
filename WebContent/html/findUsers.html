@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>邻聚</title>
+<link href="css/default.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="themes/icon.css">
+<link rel="stylesheet" type="text/css" href="css/my.css">
+<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="js/syExtJquery.js"></script>
+<script type="text/javascript" src="js/my.js"></script>
+<script type="text/javascript" src="My97DatePicker/WdatePicker.js"></script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+		<div id="toolbar" style="display: none;padding:10px 10px 8px 10px;">
+			<form id="searchForm">
+				<label for="cityId">城市：</label>
+				<select id="cityId" name="cityId" onchange="changeCity();">
+					<option value="0">请选择城市</option>
+					<option value="1">成都</option>
+				</select>
+			    <label for="courtyardId">社区：</label>
+				<select id="courtyardId" name="courtyardId">
+					<option value="0">所有社区</option>
+				</select>
+				<label for="startTime">注册时间：</label>
+				<input type="text" onFocus="WdatePicker({readOnly:true,dateFmt:'yyyy-MM-dd HH:mm'})" id="startTime" />(开始)到
+	            <input type="text" onFocus="WdatePicker({readOnly:true,dateFmt:'yyyy-MM-dd HH:mm'})" id="endTime" />(结束)
+				&nbsp;<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="search_();">查询</a>
+			</form>
+		</div>
+		<div data-options="region:'center',fit:true,border:false">
+			<table id="grid" data-options="fit:true,border:false"></table>
+		</div>
+		<!-- 查看用户的验证信息 -->
+		<div id="userValidate" class="easyui-window" title="用户验证" data-options="collapsible:false,minimizable:false,maximizable:false,icon:'icon-save'" style="width: 300px; height: 150px; padding: 5px; background: #fafafa;">
+		<div class="easyui-layout" data-options="fit:true">
+			<div data-options="region:'center',border:false" style="padding: 10px; background: #fff; border: 1px solid #ccc;">
+				<table cellpadding="3">
+					<tr>
+						<td>验证社区：</td>
+						<td><p id="validateCourtyard"></p></td>
+					</tr>
+					<tr>
+						<td>验证类型：</td>
+						<td><p id="validateTypeDescription"></p></td>
+					</tr>
+					<tr>
+						<td>提交验证时间：</td>
+						<td><p id="submitTime"></p></td>
+					</tr>
+					<tr>
+						<td>验证图片：</td>
+						<td><img id="append" src="#"></img></td>
+					</tr>
+				</table>
+			</div>
+			<div data-options="region:'south',border:false" style="text-align: center; height: 30px; line-height: 1px;">
+				<input id="userId" type="hidden" />
+				<a id="btnEp" class="easyui-linkbutton" icon="icon-ok" onclick="passValidate(true)" href="#">通过审核</a>
+				&nbsp;&nbsp;&nbsp;<a id="notbtnEp" class="easyui-linkbutton" icon="icon-remove" onclick="passValidate(false)" href="#">审核不通过</a>
+			</div>
+		</div>
+	</div>
+	</body>
+	<script type="text/javascript">
+		$(function() {
+			$('#userValidate').window('close');
+			grid = $('#grid').datagrid({
+				title : '',
+				url : '',
+				striped : true,
+				rownumbers : true,
+				pagination : true,
+				singleSelect : true,
+				idField : 'id',
+				pageSize : 20,
+				pageList : [20,40,60],
+				columns : [[{
+					width : '0',
+					title : '',
+					field : 'id',
+					hidden : true
+				}, {
+					width : '100',
+					title : '社区',
+					field : 'courtyardName'
+				}, {
+					width : '100',
+					title : '电话',
+					field : 'tel'
+				},{
+					width : '100',
+					title : '用户昵称',
+					field : 'nickname'
+				},{
+					width : '50',
+					title : '等级',
+					field : 'level'
+				},{
+					width : '50',
+					title : '经验',
+					field : 'exp'
+				}, {
+					width : '50',
+					title : '邻豆数',
+					field : 'lindou'
+				},{
+					width : '150',
+					title : '兴趣',
+					field : 'instrests'
+				}, {
+					width : '50',
+					title : '职业',
+					field : 'cereer'
+				}, {
+					width : '50',
+					title : '性别',
+					field : 'gender'
+				},{
+					width : '50',
+					title : '年龄',
+					field : 'age'
+				},{
+					width : '150',
+					title : '注册时间',
+					field : 'registerTime'
+				},{
+					width : '100',
+					title : '社区验证状态',
+					field : 'validateStatus'
+				},{
+					width : '100',
+					title : '操作',
+					field : 'action',
+					formatter : function(value, row, index) {
+						var str = '<a href="#" style="color:blue" onclick="showValidate(' + row.id + ')">查看验证信息</a>';
+						return str;
+					}
+				}
+				]],
+				toolbar : '#toolbar',
+				onBeforeLoad : function(param) {
+					
+				},
+				onLoadSuccess : function(data) {
+					$.messager.progress('close');
+				}
+			});
+		});
+		function changeCity(){
+			var cityId = $("#cityId").find("option:selected").val();
+			$.get('../manage/loadCourtyard.do',{'cityId' : cityId}, function(result) {
+				$('select[name="courtyardId"]').html('');
+				$('select[name="courtyardId"]').append("<option value='0'>请选择社区</option>");
+				$.each(result.rows, function(idx, item) {
+					$('select[name="courtyardId"]').append("<option value='" + item.id + "'>" + item.name + "</option>");
+				});
+			});
+		}
+		function search_()
+        {
+        	grid.datagrid('clearSelections');
+        	$('#grid').datagrid({
+        		url : '../manage/findUsers.do',    
+        		queryParams :
+        		{
+        			courtyardId : $("#courtyardId").find("option:selected").val(),
+	        		startTime : $("#startTime").val(),
+	        		endTime : $("#endTime").val()
+        		},
+        		striped : true,
+				rownumbers : true,
+				pagination : true,
+				singleSelect : true,
+				onBeforeLoad : function(param) {
+					
+				},
+				onLoadSuccess : function(data) {
+					$.messager.progress('close');
+				}
+        	});
+        }
+		function showValidate(userId) {
+			
+			$('#userId').val(userId);
+			var url = '../manage/showValidateInfo.do?userId='+userId;
+		    $.get(url, function(data) {
+				if (data.errorCode == 0) {
+					$.messager.progress('close');
+					$('#validateCourtyard').text(data.courtyardName);
+					$('#validateTypeDescription').text(data.validateTypeDescription);
+					$('#submitTime').text(data.submitTime);
+					$('#append').attr('src',data.append);
+					if(data.append==''){
+						$('#append').hide();
+					}else{
+						$('#append').show();
+					}
+					if(data.review){
+						$('#notbtnEp').show();
+						$('#btnEp').show();
+					}else{
+						
+						$('#notbtnEp').hide();
+						$('#btnEp').hide();
+					}
+					$('#userValidate').window({
+						title : '用户验证',
+						modal : true,
+						shadow : true,
+						closable : true,
+						maximizable : true,
+						maximized : true,
+						fit : true,
+						resizable : true
+					});
+					$('#userValidate').window('open');
+				} else {
+					$.messager.progress('close');
+					//$.messager.alert('', data.msg, 'error');
+				}
+		    });
+			
+		}
+		function passValidate(passed){
+			$.post('../manage/passValidate.do', {
+				userId : $('#userId').val(),
+				passed : passed
+			}, function(data) {
+				if (data.errorCode == 0) {
+					$('#userValidate').window('close');
+					$('#grid').datagrid('reload');
+					$.messager.alert('', '操作成功', 'info');
+				}
+			}, 'json');
+		}
+	</script>
+</html>

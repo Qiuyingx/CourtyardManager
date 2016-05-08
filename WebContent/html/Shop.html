@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>邻聚</title>
+<link href="css/default.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="themes/icon.css">
+<link rel="stylesheet" type="text/css" href="css/my.css">
+<link rel="stylesheet" href="editor/themes/default/default.css" />
+<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="js/syExtJquery.js"></script>
+<script type="text/javascript" src="js/my.js"></script>
+<script type="text/javascript" src="My97DatePicker/WdatePicker.js"></script>
+<script charset="utf-8" src="editor/kindeditor-min.js"></script>
+<script charset="utf-8" src="editor/lang/zh_CN.js"></script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+		<div id="toolbar" style="display: none;padding:10px 10px 8px 10px;">
+			<form id="searchForm">
+				<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="addGoods()">添加商品</a>
+			</form>
+		</div>
+		<div data-options="region:'center',fit:true,border:false">
+			<table id="grid" data-options="fit:true,border:false"></table>
+		</div>
+		<div id="goodsWin" class="easyui-window" style="width:1000px;height:600px" data-options="title:'修改',iconCls:'icon-edit',modal:true,minimizable:false,maximizable:false,collapsible:false,closable:true,closed:true">
+			<form id="goods_form" method="post" style="padding:10px 10px 10px 10px;">
+				<div class="control-group">
+					<label class="control-label" for="goodsName">商品名：</label>
+					<input type="text"  name="goodsName"  class="easyui-validatebox"  required="required" />
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="price">单价：</label>
+					<input type="text"  class="easyui-validatebox" name="price"  required="required" />
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="stockLimit">库存：</label>
+					<input type="text"  class="easyui-validatebox" name="stockLimit" required="required" value="-1"/>
+					输入-1表示没有限制
+				</div>
+				<div class="control-group">
+		            <label for="imageUrl">列表展示图片：</label>
+		            <input type="text" name="imageUrl" id="imageUrl" value="" /> 
+		            <input type="button" id="selectImage" value="选择图片" />
+	            </div>
+	            <div class="control-group">
+		            <label for="imageUrl">商品详情图片：</label>
+		            <input type="text" name="imagesUrl" id="imagesUrl" value="" /> 
+		            <input type="button" id="selectImages" value="上传图片(可批量)" />
+		            <input type="button" id="selectServerImages" value="从服务器选择" />
+	            </div>
+	            <div class="control-group">
+	            	<label>选择社区：</label>
+	            	<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="selectAll(true);">全选</a>&nbsp;<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" onclick="selectAll(false);">取消</a>
+	            	<p id="courtyardArea"></p>
+	            </div>
+				<div class="control-group">
+					<label class="control-label" for="remark">商品描述：</label>
+					<textarea name="remark" id="remark" style="width:100px;height:300px;"></textarea>
+				</div>
+				 <div class="control-group">
+					<label class="control-label" for="status">商品状态：</label>
+					<select name="status" id="status">
+						<option value="0" selected>上架</option>
+						<option value="1">下架</option>
+					</select>
+				</div>
+				<div class="control-group">
+					<input id="allCourtyard" name="allCourtyard" type="hidden" value="0"/>
+					<input type="hidden" name="goodsId" value="0" />
+					<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="commit()">提交</a>
+				</div>
+			</form>
+		</div>
+	</body>
+	<script type="text/javascript">
+	var editor;
+	var editorRemark;
+	KindEditor.ready(function(K) {
+		editorRemark=K.create('textarea[name="remark"]', {
+			uploadJson : 'jsp/upload_shop.jsp',
+            fileManagerJson : 'jsp/file_manager_shop.jsp',
+			allowFileManager : true,
+			allowImageUpload : true,
+			afterBlur: function(){
+				//Kindeditor下获取文本框信息
+				this.sync();
+			}
+		});
+		editor = K.editor({
+			uploadJson : 'jsp/upload_shop.jsp',
+            fileManagerJson : 'jsp/file_manager_shop.jsp',
+			allowFileManager : true
+		});
+		K('#selectImage').click(function() {
+			editor.loadPlugin('image', function() {
+				editor.plugin.imageDialog({
+					imageUrl : K('#imageUrl').val(),
+					clickFn : function(url, title, width, height, border, align) {
+						K('#imageUrl').val(K.formatUrl(url, 'absolute'));
+						editor.hideDialog();
+					}
+				});
+			});
+		});
+		K('#selectImages').click(function() {
+			editor.loadPlugin('multiimage', function() {
+				editor.plugin.multiImageDialog({
+					clickFn : function(urlList) {
+						K('#imagesUrl').val('');
+						var imageUrls='';
+						K.each(urlList, function(i, data) {
+							imageUrls+=K.formatUrl(data.url, 'absolute').substring(1);
+							imageUrls+='|';
+						});
+						K('#imagesUrl').val(imageUrls);
+						editor.hideDialog();
+					}
+				});
+			});
+		});
+		K('#selectServerImages').click(function() {
+			editor.loadPlugin('filemanager', function() {
+				editor.plugin.filemanagerDialog({
+					viewType : 'VIEW',
+					dirName : 'image',
+					clickFn : function(url, title) {
+						//K('#url').val(url);
+						K('#imagesUrl').val(K.formatUrl(url, 'absolute').substring(1));
+						editor.hideDialog();
+					}
+				});
+			});
+		});
+	});
+		var grid;
+		$(function() {
+			$('#goodsWin').window('close');
+			var cityId = 1;
+			$.get('../manage/loadCourtyard.do',{'cityId' : cityId}, function(result) {
+				$.each(result.rows, function(idx, item) {
+					$('#courtyardArea').append(item.name+"<input type=\"checkbox\" id=\"courtyardIds"+item.id+"\" name=\"courtyardIds\" value=\""+item.id+"\" checked=\"true\"/>&nbsp;&nbsp;");
+					if((idx+1)%10==0){
+						$('#courtyardArea').append("<br/>");
+					}
+				});
+			});
+			grid = $('#grid').datagrid({
+				title : '',
+				url : '../manage/getAllGoods.do',
+				striped : true,
+				rownumbers : true,
+				pagination : true,
+				singleSelect : true,
+				idField : 'id',
+				pageSize : 20,
+				pageList : [20,40,60],
+				columns : [[{
+					width : '0',
+					title : '',
+					field : 'id',
+					hidden : true
+				}, {
+					width : '100',
+					title : '商品名称',
+					field : 'goodsName'
+				}, {
+					width : '100',
+					title : '单价',
+					field : 'price'
+				},{
+					width : '100',
+					title : '库存',
+					field : 'stockLimit',
+					formatter : function(value , row,index){
+						if(value < 0 ){
+							return '无限制';
+						}else{
+							return value;
+						}
+					}
+				},{
+					width : '300',
+					title : '商品描述',
+					field : 'remark'
+				}, {
+					width : '100',
+					title : '状态',
+					field : 'status',
+					formatter : function(value, row, index){
+						if(value==0){
+							return "在售";
+						}else{
+							return "已下架";
+						}
+					}
+				},{
+					width : '100',
+					title : '操作',
+					field : 'action',
+					formatter : function(value, row, index) {
+						var str = '<a href="#" style="color:blue" onclick="showGoodsInfo(' + row.id + ','+index+')">编辑</a>&nbsp;&nbsp|&nbsp;&nbsp;';
+						if(row.status==0){
+							str = str+'<a href="#" style="color:blue" onclick="changeStatus(' + row.id + ',false)">下架</a>';
+						}else{
+							str = str+'<a href="#" style="color:blue" onclick="changeStatus(' + row.id + ',true)">上架</a>';
+						}
+						return str;
+					}
+				}
+				]],
+				toolbar : '#toolbar',
+				onBeforeLoad : function(param) {
+					
+				},
+				onLoadSuccess : function(data) {
+					$.messager.progress('close');
+				}
+			});
+		});
+		
+		
+		function showGoodsInfo(goodsId,index) {
+			var rows = grid.datagrid('getRows');
+			var row = rows[index];
+			$('#status').val(row.status);
+			$('#goods_form').find("input[name='goodsName']").val(row.goodsName);
+			$('#goods_form').find("input[name='price']").val(row.price);
+			$('#goods_form').find("input[name='stockLimit']").val(row.stockLimit);
+			//$('#goods_form').find("textarea[name='remark']").val(row.remark);
+			editorRemark.html(row.remark);
+			$('#goods_form').find("input[name='image']").val(row.image);
+			$('#goods_form').find("input[name='goodsId']").val(row.id);
+			if(row.courtyards.length>0){
+				$("input[type='checkbox']").prop("checked",false);
+				$.each(row.courtyards, function(idx, item) {
+					$('#courtyardIds'+item.id).prop("checked",true);
+				});
+			}else{
+				$("input[type='checkbox']").prop("checked",true);
+			}
+			$('#goodsWin').window({
+				title : '修改商品'
+			});
+			$('#goodsWin').window('open');
+			
+		}
+		function changeStatus(goodsId, isUp){
+			$.post('../manage/changeGoodsStatus.do', {
+				goodsId : goodsId,
+				isUp : isUp
+			}, function(data) {
+				if (data.errorCode == 0) {
+					//$('#userValidate').window('close');
+					$('#grid').datagrid('reload');
+					$.messager.alert('', '操作成功', 'info');
+				}
+			}, 'json');
+		}
+		function addGoods(){
+			$('#status').val('0');
+			$('#goods_form').find("input[name='goodsName']").val('');
+			$('#goods_form').find("input[name='price']").val('');
+			$('#goods_form').find("input[name='stockLimit']").val('');
+			//$('#goods_form').find("textarea[name='remark']").val('');
+			editorRemark.html('');
+			$('#goods_form').find("input[name='image']").val('');
+			$('#goods_form').find("input[name='goodsId']").val(0);
+			selectAll(true);
+			$('#goodsWin').window({
+				title : '添加新商品'
+			});
+			$('#goodsWin').window('open');
+		}
+		function commit() {
+			var allcheck = true;
+        	$('input:checkbox').each(function() {
+                if($(this).prop('checked')==false){
+                	allcheck = false;
+                }
+        	});
+        	if(allcheck){
+        		$("#allCourtyard").val(0);
+        	}else{
+        		$("#allCourtyard").val(1);
+        	}
+        	editorRemark.sync();
+			var url = '../manage/addGoods.do';
+			$('#goods_form').form('submit', {
+				url : url,
+				onSubmit : function() {
+					var isValid = $(this).form('validate');
+					return isValid;
+				},
+				onBeforeLoad : function() {
+					$.messager.progress({
+						text : '数据处理中，请稍后....'
+					});
+				},
+				success : function(data) {
+					$.messager.progress('close');
+					// change the JSON string to javascript object
+					var data = eval('(' + data + ')');
+					if (data.errorCode == 0) {
+						$('#goodsWin').window('close');
+						$.messager.alert('', '成功', 'info', function() {
+							grid.datagrid('clearSelections');
+							grid.datagrid('reload');
+						});
+					}else{
+						$.messager.alert('', data.msg, 'error');
+					}
+				},
+				onLoadError : function() {
+					$('#goodsWin').window('close');
+					$.messager.progress('close');
+					$.messager.alert('', '提交失败!', 'error');
+				}
+			});
+		}
+		function selectAll(isAll){
+        	$("input[type='checkbox']").prop("checked",isAll);
+        	if(isAll){
+        		$("#allCourtyard").val(0);
+        	}else{
+        		$("#allCourtyard").val(1);
+        	}
+        }
+	</script>
+</html>

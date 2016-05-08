@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>邻聚</title>
+<link href="css/default.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="themes/icon.css">
+<link rel="stylesheet" type="text/css" href="css/my.css">
+<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="js/syExtJquery.js"></script>
+<script type="text/javascript" src='js/outlook2.js'></script>
+<script type="text/javascript" src="My97DatePicker/WdatePicker.js"></script>
+<script charset="utf-8" src="editor/kindeditor-min.js"></script>
+<script charset="utf-8" src="editor/lang/zh_CN.js"></script>
+<script src="editor/kindeditor.js"></script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+		
+		<div data-options="region:'center',fit:true,border:false">
+			<table id="grid" data-options="fit:true,border:false"></table>
+		</div>
+		<div id="activityWin" class="easyui-window" style="width:800px;height:650px" data-options="title:'修改',iconCls:'icon-edit',modal:true,minimizable:false,maximizable:false,collapsible:false,closable:true,closed:true">
+			<form id="publishForm" method="post">
+				<table>
+				<tr>
+					<td><label for="title">标题：</label></td>
+					<td>
+					<input name="title" id="title" type="text" />
+					</td>
+				</tr>
+				<tr>
+					<td><label for="sign">可否报名：</label></td>
+					<td>
+						<select id="sign" name="sign">
+							<option value="0">可报名</option>
+							<option value="1">不可报名</option>
+						</select>
+					</td>
+					<td><label for="peoplesLimit">人数限制：</label></td>
+					<td><input name="peoplesLimit" id="peoplesLimit" type="text" /></td>
+				</tr>
+				<tr>
+					<td><label for="startTime">开始时间：</label></td>
+					<td><input type="text" onFocus="WdatePicker({readOnly:true,dateFmt:'yyyy-MM-dd HH:mm'})" name="startTime" /></td>
+					<td><label for="endTime">结束时间：</label></td>
+					<td><input type="text" onFocus="WdatePicker({readOnly:true,dateFmt:'yyyy-MM-dd HH:mm'})" name="endTime" /></td>
+				</tr>
+				<tr>
+					<td><label for="bannerUrl">banner图片：</label></td>
+					<td><input type="text" name="bannerUrl" id="bannerUrl" value="" /> </td>
+					<td><input type="button" id="image3" value="选择图片" /></td>
+					<td></td>
+				</tr>
+				<tr>
+				<td>选择社区</td>
+				<td colspan="3" id="dd">
+					<input id="allCourtyard" name="allCourtyard" type="hidden" value="0"/>
+					<input id="activityId" name="activityId" type="hidden"/>
+					<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="selectAll(true);">全选</a>&nbsp;<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" onclick="selectAll(false);">取消</a><br/>
+				</td>
+				</tr>
+				<tr>
+					<td><label for="content">内容：</label></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				</table>
+				<textarea name="content" style="width:800px;height:400px;"></textarea>
+				&nbsp;<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="commit();">提交</a>
+			</form>
+		</div>
+	</body>
+	<script type="text/javascript">
+	
+	var editor;
+	var contentEditor;
+	KindEditor.ready(function(K) {
+		contentEditor=K.create('textarea[name="content"]', {
+			uploadJson : 'editor/jsp/upload_json.jsp',
+            fileManagerJson : 'editor/jsp/file_manager_json.jsp',
+			allowFileManager : true,
+			allowImageUpload : true,
+			afterBlur: function(){
+				//Kindeditor下获取文本框信息
+				this.sync();
+			}
+		});
+		editor = K.editor({
+			uploadJson : 'editor/jsp/upload_json.jsp',
+            fileManagerJson : 'editor/jsp/file_manager_json.jsp',
+			allowFileManager : true
+		});
+		K('#image3').click(function() {
+			editor.loadPlugin('image', function() {
+				editor.plugin.imageDialog({
+					imageUrl : K('#bannerUrl').val(),
+					clickFn : function(url, title, width, height, border, align) {
+						K('#bannerUrl').val(K.formatUrl(url, 'absolute'));
+						editor.hideDialog();
+					}
+				});
+			});
+		});
+	});
+	
+		$(function() {
+			var cityId = 1;
+			$.get('../manage/loadCourtyard.do',{'cityId' : cityId}, function(result) {
+				$.each(result.rows, function(idx, item) {
+					$('#dd').append(item.name+"<input type=\"checkbox\" id=\"courtyardIds"+item.id+"\" name=\"courtyardIds\" value=\""+item.id+"\" checked=\"true\"/>&nbsp;&nbsp;");
+					if((idx+1)%3==0){
+						$('#dd').append("<br/>");
+					}
+				});
+			});
+			grid = $('#grid').datagrid({
+				url : '../manage/findActivitys.do',
+				striped : true,
+				rownumbers : true,
+				pagination : true,
+				singleSelect : true,
+				idField : 'id',
+				pageSize : 20,
+				pageList : [20,40,60],
+				columns : [[{
+					width : '0',
+					title : '',
+					field : 'id',
+					hidden : true
+				}, {
+					width : '150',
+					title : '标题',
+					field : 'activityTitle'
+				},{
+					width : '150',
+					title : '开始时间',
+					field : 'startTime'
+				},{
+					width : '150',
+					title : '结束时间',
+					field : 'endTime'
+				}, {
+					width : '60',
+					title : '可否报名',
+					field : 'signDisable',
+					formatter : function(value , row,index){
+						if(value){
+							return '不可报名';
+						}else{
+							return '可报名';
+						}
+					}
+				},{
+					width : '60',
+					title : '人数限制',
+					field : 'peoplesLimit'
+				}, {
+					width : '60',
+					title : '报名人数',
+					field : 'joinedAmount'
+				}, {
+					width : '60',
+					title : '评论人数',
+					field : 'replyAmount'
+				}, {
+					width : '60',
+					title : '点赞人数',
+					field : 'laudAmount'
+				}, {
+					width : '50',
+					title : '发布者',
+					field : 'managerName'
+				}, {
+					width : '150',
+					title : '发布时间',
+					field : 'createTime'
+				},{
+					width : '70',
+					title : '操作',
+					field : 'removeActivity',
+					formatter : function(value, row, index) {
+						var str = '<a href="#" style="color:blue" onclick="showGoodsInfo(' + index + ')">编辑</a>&nbsp;|&nbsp;<a href="#" style="color:blue" onclick="deleteActivity(' + row.id + ')">删除</a>';
+						return str;
+					}
+				},{
+					width : '100',
+					title : '报名详情',
+					field : 'action',
+					formatter : function(value, row, index) {
+						if(!row.signDisable){
+							var str = '<a href="findSignActivity.html?activityId='+row.id+'" target="_self" style="color:blue" >查看报名详情</a>';
+							return str;
+						}else{
+							return '';
+						}
+					}
+				}
+				]],
+				toolbar : '#toolbar',
+				onBeforeLoad : function(param) {
+					
+				},
+				onLoadSuccess : function(data) {
+					$.messager.progress('close');
+				}
+			});
+		});
+		function changeCity(){
+			var cityId = $("#cityId").find("option:selected").val();
+			$.get('../manage/loadCourtyard.do',{'cityId' : cityId}, function(result) {
+				$('select[name="courtyardId"]').html('');
+				$('select[name="courtyardId"]').append("<option value='0'>请选择社区</option>");
+				$.each(result.rows, function(idx, item) {
+					$('select[name="courtyardId"]').append("<option value='" + item.id + "'>" + item.name + "</option>");
+				});
+			});
+		}
+		function deleteActivity(activityId){
+			$.messager.confirm('', '确定删除该活动?', function(r) {
+				if (r) {
+					$.post('../manage/deleteActivity.do', {
+						activityId : activityId
+					}, function(data) {
+						if (data.errorCode == 0) {
+							$('#grid').datagrid('reload');
+							$.messager.alert('', '操作成功', 'info');
+						}
+					}, 'json');
+				}
+			});
+		}
+		
+		function showGoodsInfo(index) {
+			var rows = grid.datagrid('getRows');
+			var row = rows[index];
+			$('#activityWin').find("input[name='title']").val(row.activityTitle);
+			$('#activityId').val(row.id);
+			if(row.signDisable){
+				$('#sign').val('1');
+			}else{
+				$('#sign').val('0');
+			}
+			$('#activityWin').find("input[name='peoplesLimit']").val(row.peoplesLimit);
+			$('#activityWin').find("input[name='startTime']").val(row.startTime);
+			$('#activityWin').find("input[name='endTime']").val(row.endTime);
+			$('#activityWin').find("input[name='bannerUrl']").val(row.image);
+			//$('#activityWin').find("textarea[name='content']").val(row.content);
+			contentEditor.html(row.content);
+			
+			if(row.courtyards.length>0){
+				$("input[type='checkbox']").prop("checked",false);
+				$.each(row.courtyards, function(idx, item) {
+					$('#courtyardIds'+item.id).prop("checked",true);
+				});
+			}else{
+				$("input[type='checkbox']").prop("checked",true);
+			}
+			$('#activityWin').window({
+				modal : true,
+				shadow : true,
+				closable : true,
+				maximizable : true,
+				maximized : true,
+				fit : true,
+				resizable : true
+			});
+			$('#activityWin').window('open');
+			
+		}
+		
+		function selectAll(isAll){
+        	$("input[type='checkbox']").prop("checked",isAll);
+        	if(isAll){
+        		$("#allCourtyard").val(0);
+        	}else{
+        		$("#allCourtyard").val(1);
+        	}
+        }
+		
+		function commit() {
+
+        	var allcheck = true;
+        	$('input:checkbox').each(function() {
+                if($(this).prop('checked')==false){
+                	allcheck = false;
+                }
+        	});
+        	if(allcheck){
+        		$("#allCourtyard").val(0);
+        	}else{
+        		$("#allCourtyard").val(1);
+        	}
+        	contentEditor.sync();
+			var url = '../manage/publishActivity.do';
+			$('#publishForm').form('submit', {
+				url : url,
+				onSubmit : function() {
+					var isValid = $(this).form('validate');
+					return isValid;
+				},
+				onBeforeLoad : function() {
+					$.messager.progress({
+						text : '数据处理中，请稍后....'
+					});
+				},
+				success : function(data) {
+					$.messager.progress('close');
+					// change the JSON string to javascript object
+					var data = eval('(' + data + ')');
+					if (data.errorCode == 0) {
+						$.messager.alert('', '修改成功', 'info');
+					} else {
+						$.messager.alert('', data.msg, 'error');
+					}
+				},
+				onLoadError : function() {
+					$.messager.progress('close');
+					$.messager.alert('', '提交失败!', 'error');
+				}
+			});
+		}
+		
+	</script>
+</html>

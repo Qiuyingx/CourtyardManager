@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>邻聚</title>
+<link href="css/default.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="themes/icon.css">
+<link rel="stylesheet" type="text/css" href="css/my.css">
+<script type="text/javascript" src="js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="js/syExtJquery.js"></script>
+<script type="text/javascript" src="js/my.js"></script>
+<script type="text/javascript" src="My97DatePicker/WdatePicker.js"></script>
+<script charset="utf-8" src="editor/kindeditor-min.js"></script>
+<script charset="utf-8" src="editor/lang/zh_CN.js"></script>
+<script src="editor/kindeditor.js"></script>
+
+</head>
+<body>
+		<div id="toolbar" style="padding:10px 10px 8px 10px;padding-bottom:50px; overflow: auto;">
+			<form id="publishForm" method="post">
+				<table>
+				<tr>
+					<td><label for="title">标题：</label></td>
+					<td>
+					<input name="title" id="title" type="text" />
+					</td>
+				</tr>
+				<tr>
+					<td><label for="sign">可否报名：</label></td>
+					<td>
+						<select id="sign" name="sign">
+							<option value="0">可报名</option>
+							<option value="1">不可报名</option>
+						</select>
+					</td>
+					<td><label for="peoplesLimit">人数限制：</label></td>
+					<td><input name="peoplesLimit" id="peoplesLimit" type="text" /></td>
+				</tr>
+				<tr>
+					<td><label for="startTime">开始时间：</label></td>
+					<td><input type="text" onFocus="WdatePicker({readOnly:true,dateFmt:'yyyy-MM-dd HH:mm'})" name="startTime" /></td>
+					<td><label for="endTime">结束时间：</label></td>
+					<td><input type="text" onFocus="WdatePicker({readOnly:true,dateFmt:'yyyy-MM-dd HH:mm'})" name="endTime" /></td>
+				</tr>
+				<tr>
+					<td><label for="bannerUrl">banner图片：</label></td>
+					<td><input type="text" name="bannerUrl" id="bannerUrl" value="" /> </td>
+					<td><input type="button" id="image3" value="选择图片" /></td>
+					<td></td>
+				</tr>
+				<tr>
+				<td>选择社区</td>
+				<td colspan="3" id="dd">
+					<input id="allCourtyard" name="allCourtyard" type="hidden" value="0"/>
+					<input id="activityId" name="activityId" type="hidden" value="0"/>
+					<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="selectAll(true);">全选</a>&nbsp;<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" onclick="selectAll(false);">取消</a><br/>
+				</td>
+				</tr>
+				<tr>
+					<td><label for="content">内容：</label></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				</table>
+				<textarea name="content" style="width:800px;height:400px;"></textarea>
+				&nbsp;<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="commit();">提交</a>
+			</form>
+		</div>
+	</body>
+	<script type="text/javascript">
+	
+	$(function() {
+		var cityId = 1;
+		$.get('../manage/loadCourtyard.do',{'cityId' : cityId}, function(result) {
+			$.each(result.rows, function(idx, item) {
+				$('#dd').append(item.name+"<input type=\"checkbox\" name=\"courtyardIds\" value=\""+item.id+"\" checked=\"true\"/>&nbsp;&nbsp;");
+				if((idx+1)%3==0){
+					$('#dd').append("<br/>");
+				}
+			});
+		});
+		
+	});
+		var editor;
+		KindEditor.ready(function(K) {
+			K.create('textarea[name="content"]', {
+				uploadJson : 'editor/jsp/upload_json.jsp',
+                fileManagerJson : 'editor/jsp/file_manager_json.jsp',
+				allowFileManager : true,
+				allowImageUpload : true,
+				afterBlur: function(){
+					//Kindeditor下获取文本框信息
+					this.sync();
+				}
+			});
+			editor = K.editor({
+				uploadJson : 'editor/jsp/upload_json.jsp',
+                fileManagerJson : 'editor/jsp/file_manager_json.jsp',
+				allowFileManager : true
+			});
+			K('#image3').click(function() {
+				editor.loadPlugin('image', function() {
+					editor.plugin.imageDialog({
+						imageUrl : K('#bannerUrl').val(),
+						clickFn : function(url, title, width, height, border, align) {
+							K('#bannerUrl').val(K.formatUrl(url, 'absolute'));
+							editor.hideDialog();
+						}
+					});
+				});
+			});
+		});
+	
+        function commit() {
+
+        	var allcheck = true;
+        	$('input:checkbox').each(function() {
+                if($(this).prop('checked')==false){
+                	allcheck = false;
+                }
+        	});
+        	if(allcheck){
+        		$("#allCourtyard").val(0);
+        	}else{
+        		$("#allCourtyard").val(1);
+        	}
+        	
+			var url = '../manage/publishActivity.do';
+			$('#publishForm').form('submit', {
+				url : url,
+				onSubmit : function() {
+					var isValid = $(this).form('validate');
+					return isValid;
+				},
+				onBeforeLoad : function() {
+					$.messager.progress({
+						text : '数据处理中，请稍后....'
+					});
+				},
+				success : function(data) {
+					$.messager.progress('close');
+					// change the JSON string to javascript object
+					var data = eval('(' + data + ')');
+					if (data.errorCode == 0) {
+						$.messager.alert('', '添加成功', 'info');
+					} else {
+						$.messager.alert('', data.msg, 'error');
+					}
+				},
+				onLoadError : function() {
+					$.messager.progress('close');
+					$.messager.alert('', '提交失败!', 'error');
+				}
+			});
+		}
+        function selectAll(isAll){
+        	$("input[type='checkbox']").prop("checked",isAll);
+        	if(isAll){
+        		$("#allCourtyard").val(0);
+        	}else{
+        		$("#allCourtyard").val(1);
+        	}
+        }
+	</script>
+</html>

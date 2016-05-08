@@ -1,0 +1,36 @@
+#connect-container {
+	float: left;
+	margin-left: 15px;
+	height: 100%;
+}
+
+#connect-container div {
+	padding: 5px;
+}
+
+#console-container {
+	float: left;
+	margin-left: 15px;
+	width: 93%;
+	height: 100%;
+}
+
+#connect-container-other {
+	float: left;
+	margin-left: 15px;
+}
+
+#console {
+	border: 1px solid #CCCCCC;
+	border-right-color: #999999;
+	border-bottom-color: #999999;
+	overflow-y: scroll;
+	padding: 5px;
+	width: 97%;
+	height: 94%;
+}
+
+#console p {
+	padding: 0;
+	margin: 0;
+}
